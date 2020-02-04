@@ -1,18 +1,28 @@
-module instruction_memory #(parameter PC_LEN = 10,
-          parameter INSTR_LEN = 31,
-          parameter MEM_SIZE = (2 ** 10))
-          (input wire clk,
-          input wire nreset,
-          input pc,
-          output instr);
+module instruction_memory #(parameter
+  INSTR_LEN = 32,
+  MEM_ADDR_SIZE = 32
+  )
+  (
+  input wire clk,
+  input wire nreset,
+  input wire [MEM_ADDR_SIZE-1:0] pc,
+  output wire [INSTR_LEN-1:0] instr
+  );
 
-  logic [MEM_SIZE:0][INSTR_LEN:0] mem;
+  reg [INSTR_LEN-1:0] mem [(2 ** MEM_ADDR_SIZE)-1:0];
 
-  always_ff @(posedge clk) begin
+  initial begin
+    //$readmemh("data.hex", mem);
+    mem[0] <= 32'hEB000002;
+    mem[1] <= 32'hEA000000;
+    mem[10] <= 32'hEAFFFFF6;
+  end
+
+  always @(posedge clk) begin
     if (nreset) begin
       instr <= 0;
     end else begin
-      instr <= mem[pc]
+      instr <= mem[pc];
     end
   end
 endmodule

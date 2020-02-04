@@ -11,18 +11,27 @@ module cpu(
   output wire [7:0] debug_port7
   );
 
-  parameter PC_LEN = 10;
+  parameter PC_LEN = 32;
   parameter INSTR_LEN = 32;
   parameter MEM_SIZE = (2 ** 10);
+  parameter REG_SIZE = 32;
+  parameter REG_ADDR = 4;
 
-  reg [PC_LEN:0] pc;
-  logic inst;
+  reg [PC_LEN-1:0] pc;
+
+  wire [REG_SIZE-1:0] d0;
+  wire [REG_SIZE-1:0] d1;
+  wire [REG_ADDR-1:0] r0;
+  wire [REG_ADDR-1:0] r1;
+  wire [REG_SIZE-1:0] din;
+  wire ws;
+  wire inst;
 
   // Controls the LED on the board.
   assign led = 1'b1;
 
   // These are how you communicate back to the serial port debugger.
-  assign debug_port1 = 8'h01;
+  assign debug_port1 = pc[7:0];
   assign debug_port2 = 8'h02;
   assign debug_port3 = 8'h03;
   assign debug_port4 = 8'h04;
@@ -31,9 +40,15 @@ module cpu(
   assign debug_port7 = 8'h07;
 
   instruction_memory im (clk, nreset, pc, inst);
+  register_file rf (clk, nreset, r0, r1, ws, din, d0, d1);
+  decode dc (clk, inst,d0, d1, pc, r0, r1, din, ws);
 
-  always_ff @(posedge clk) begin
-
+  always @(posedge clk) begin
+    if (nreset)
+      pc <= 0;
+    else
+      if (~(instr[27:25] & 3'b101))
+        pc <= pc + 1;
   end
 
 endmodule
