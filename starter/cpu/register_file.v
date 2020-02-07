@@ -16,7 +16,7 @@ module register_file #(parameter
   reg [REG_SIZE-1:0] registers [(2 ** ADDR_SIZE)-1:0];
 
   always @(posedge clk) begin
-    if (nreset) begin
+    if (~nreset) begin
       d1_out <= 0;
       d2_out <= 0;
     end else begin

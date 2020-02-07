@@ -24,8 +24,10 @@ module cpu(
   wire [REG_ADDR-1:0] r0;
   wire [REG_ADDR-1:0] r1;
   wire [REG_SIZE-1:0] din;
+  wire [24:0] offset;
   wire ws;
   wire inst;
+
 
   // Controls the LED on the board.
   assign led = 1'b1;
@@ -41,14 +43,13 @@ module cpu(
 
   instruction_memory im (clk, nreset, pc, inst);
   register_file rf (clk, nreset, r0, r1, ws, din, d0, d1);
-  decode dc (clk, inst,d0, d1, pc, r0, r1, din, ws);
+  compute_offset of (clk, inst, offset);
 
   always @(posedge clk) begin
-    if (nreset)
+    if (~nreset)
       pc <= 0;
     else
-      if (~(instr[27:25] & 3'b101))
-        pc <= pc + 1;
+      pc <= pc + 4 + offset;
   end
 
 endmodule
