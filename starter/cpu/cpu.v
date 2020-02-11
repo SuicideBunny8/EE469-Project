@@ -11,45 +11,58 @@ module cpu(
   output wire [7:0] debug_port7
   );
 
-  parameter PC_LEN = 32;
   parameter INSTR_LEN = 32;
   parameter MEM_SIZE = (2 ** 10);
   parameter REG_SIZE = 32;
   parameter REG_ADDR = 4;
 
-  reg [PC_LEN-1:0] pc;
-
   wire [REG_SIZE-1:0] d0;
   wire [REG_SIZE-1:0] d1;
   wire [REG_ADDR-1:0] r0;
   wire [REG_ADDR-1:0] r1;
+  wire [REG_ADDR-1:0] ws;
   wire [REG_SIZE-1:0] din;
-  wire [24:0] offset;
-  wire ws;
+  wire [3:0] opcode;
+  wire [3:0] cond;
+  wire [23:0] offset;
+  wire [3:0] b_imm;
+  wire [7:0] shift;
+  wire [3:0] rot;
+  wire [7:0] imm;
+  wire we;
   wire inst;
+  wire set_cond;
 
 
   // Controls the LED on the board.
   assign led = 1'b1;
 
-  // These are how you communicate back to the serial port debugger.
-  assign debug_port1 = pc[7:0];
-  assign debug_port2 = 8'h02;
-  assign debug_port3 = 8'h03;
-  assign debug_port4 = 8'h04;
-  assign debug_port5 = 8'h05;
-  assign debug_port6 = 8'h06;
-  assign debug_port7 = 8'h07;
+  always @* begin
+    // These are how you communicate back to the serial port debugger.
+    debug_port1 = pc[7:0];
+    debug_port2 = 8'h02;
+    debug_port3 = 8'h03;
+    debug_port4 = 8'h04;
+    debug_port5 = 8'h05;
+    debug_port6 = 8'h06;
+    debug_port7 = 8'h07;
+
+    cond = inst[31:28];
+    b_imm = inst[27:24]; //b_imm[1] means op 2 is register
+    opcode = inst[24:21];
+    set_cond = inst[20];
+    r0 = inst[19:16];
+    ws = inst[15:12];
+    //op 2 if b_imm == 0
+    shift = inst[11:4];
+    r1 = inst[3:0];
+    //op 2 is b_imm == 1
+    rot = inst[11:8];
+    imm = inst[7:0];
+  end
 
   instruction_memory im (clk, nreset, pc, inst);
-  register_file rf (clk, nreset, r0, r1, ws, din, d0, d1);
+  register_file rf (clk, nreset, r0, r1, ws, offset, we, din, d0, d1);
   compute_offset of (clk, inst, offset);
-
-  always @(posedge clk) begin
-    if (~nreset)
-      pc <= 0;
-    else
-      pc <= pc + 4 + offset;
-  end
 
 endmodule

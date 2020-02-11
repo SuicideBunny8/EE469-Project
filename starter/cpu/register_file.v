@@ -7,6 +7,8 @@ module register_file #(parameter
   input wire nreset,
   input wire [ADDR_SIZE-1:0] select1,
   input wire [ADDR_SIZE-1:0] select2,
+  input wire [ADDR_SIZE-1:0] wselect,
+  input wire [23:0] offset,
   input wire read_not_write,
   input wire [REG_SIZE-1:0] data_in,
   output wire [REG_SIZE-1:0] d1_out,
@@ -19,11 +21,14 @@ module register_file #(parameter
     if (~nreset) begin
       d1_out <= 0;
       d2_out <= 0;
+      registers[15] <= 0;
     end else begin
       if (~read_not_write)
-        registers[select1] <= data_in;
+        registers[wselect] <= data_in;
       d1_out <= registers [select1];
       d2_out <= registers [select2];
+
+      registers[15] <= registers[15] + 4 + offset; //program counter
     end
   end
 endmodule
