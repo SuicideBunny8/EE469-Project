@@ -22,6 +22,7 @@ module cpu(
   wire [REG_ADDR-1:0] r1;
   wire [REG_ADDR-1:0] ws;
   wire [REG_SIZE-1:0] din;
+  wire [REG_SIZE-1:0] pc;
   wire [3:0] opcode;
   wire [3:0] cond;
   wire [23:0] offset;
@@ -62,7 +63,7 @@ module cpu(
   end
 
   instruction_memory im (clk, nreset, pc, inst);
-  register_file rf (clk, nreset, r0, r1, ws, offset, we, din, d0, d1);
+  register_file rf (clk, nreset, r0, r1, ws, offset, we, din, d0, d1, pc);
   compute_offset of (clk, inst, offset);
 
 endmodule

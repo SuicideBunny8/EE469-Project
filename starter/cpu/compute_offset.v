@@ -7,10 +7,10 @@ module compute_offset #(parameter
   output wire offset
   );
 
-  wire offs;
+  wire signed offs;
   always @(*) begin
     case (instr[27:25])
-      3'b101: offs = instr[23:0] - 4;
+      3'b101: offs = (instr[23:0] << 2) - 4;
       default: offs = 0;
     endcase
   end
