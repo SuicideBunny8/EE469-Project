@@ -5,6 +5,7 @@ module register_file #(parameter
   (
   input wire clk,
   input wire nreset,
+  input wire [1:0] phase,
   input wire [ADDR_SIZE-1:0] select1,
   input wire [ADDR_SIZE-1:0] select2,
   input wire [ADDR_SIZE-1:0] wselect,
@@ -28,11 +29,17 @@ module register_file #(parameter
       d2_out <= 0;
       registers[15] <= 0;
     end else begin
-      if (~read_not_write)
-        registers[wselect] <= data_in;
-      d1_out <= registers [select1];
-      d2_out <= registers [select2];
-
+      case (phase)
+        2'b01: begin // reg read
+                 d1_out <= registers [select1];
+                 d2_out <= registers [select2];
+               end
+        2'b11: begin // write back
+                 if (~read_not_write)
+                   registers[wselect] <= data_in;
+               end
+        default: ;
+      endcase
       registers[15] <= registers[15] + 4 + offset; //program counter
     end
   end

@@ -17,10 +17,11 @@ module flags #(parameter
     flags[4'b1110] <= 1'b1;
   end
 
+  always @(*) begin
+
+  end
+
   always @(posedge clk) begin
-    if (comp) begin
-      
-    end
       cond_met <= flags[cond_code];
   end
 

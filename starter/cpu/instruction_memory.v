@@ -6,6 +6,7 @@ module instruction_memory #(parameter
   (
   input wire clk,
   input wire nreset,
+  input wire [1:0] phase,
   input wire [PC_SIZE-1:0] pc,
   output wire [INSTR_LEN-1:0] instr
   );
@@ -23,7 +24,11 @@ module instruction_memory #(parameter
     if (~nreset) begin
       instr <= 0;
     end else begin
-      instr <= mem[pc[MEM_ADDR_SIZE-1:0]];
+      case (phase)
+        2'b00: instr <= {mem[pc[MEM_ADDR_SIZE-1:0]], mem[pc[MEM_ADDR_SIZE-1:0]+1],
+                mem[pc[MEM_ADDR_SIZE-1:0]+2], mem[pc[MEM_ADDR_SIZE-1:0]+3]};
+        default: ;
+      endcase
     end
   end
 endmodule

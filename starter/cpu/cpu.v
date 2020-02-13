@@ -34,7 +34,15 @@ module cpu(
   wire inst;
   wire set_cond;
 
+  // phase 00 = instr fetch
+  // phase 01 = reg read
+  // phase 10 = execute and mem
+  // phase 11 = write back
+  reg [1:0] phase;
 
+  initial begin
+    phase <= 0;
+  end
   // Controls the LED on the board.
   assign led = 1'b1;
 
@@ -62,8 +70,16 @@ module cpu(
     imm = inst[7:0];
   end
 
-  instruction_memory im (clk, nreset, pc, inst);
-  register_file rf (clk, nreset, r0, r1, ws, offset, we, din, d0, d1, pc);
+  instruction_memory im (clk, nreset, phase, pc, inst);
+  register_file rf (clk, nreset, phase, r0, r1, ws, offset, we, din, d0, d1, pc);
   compute_offset of (clk, inst, offset);
+
+  always @(posedge clk) begin
+    if (~nreset) begin
+      phase <= 0;
+    end else begin
+      phase <= phase + 1;
+    end
+  end
 
 endmodule
