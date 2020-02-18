@@ -1,6 +1,6 @@
 module instruction_memory #(parameter
   INSTR_LEN = 32,
-  MEM_ADDR_SIZE = 16,
+  MEM_ADDR_SIZE = 10,
   PC_SIZE = 32
   )
   (
@@ -12,10 +12,12 @@ module instruction_memory #(parameter
   );
 
   reg [7:0] mem [(2 ** MEM_ADDR_SIZE)-1:0];
+  integer i;
 
   initial begin
     //$readmemh("data.hex", mem);
-    mem = 0;
+    for (i=0;i<(2 ** MEM_ADDR_SIZE);i++)
+      mem[i] = 0;
   end
 
   always @(posedge clk) begin
