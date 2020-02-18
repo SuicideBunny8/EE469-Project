@@ -23,9 +23,9 @@ module cpu(
   wire [REG_ADDR-1:0] ws;
   wire [REG_SIZE-1:0] din;
   wire [REG_SIZE-1:0] pc;
+  wire signed [23:0] offset;
   wire [3:0] opcode;
   wire [3:0] cond;
-  wire [23:0] offset;
   wire [3:0] b_imm;
   wire [7:0] shift;
   wire [3:0] rot;
@@ -49,7 +49,7 @@ module cpu(
   always @* begin
     // These are how you communicate back to the serial port debugger.
     debug_port1 = pc[7:0];
-    debug_port2 = 8'h02;
+    debug_port2 = {6'b000000, phase};
     debug_port3 = 8'h03;
     debug_port4 = 8'h04;
     debug_port5 = 8'h05;

@@ -4,7 +4,7 @@ module compute_offset #(parameter
   (
   input wire clk,
   input wire instr,
-  output wire offset
+  output wire signed offset
   );
 
   wire signed offs;

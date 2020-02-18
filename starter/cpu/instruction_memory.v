@@ -15,9 +15,7 @@ module instruction_memory #(parameter
 
   initial begin
     //$readmemh("data.hex", mem);
-    mem[0] <= 32'hEB000002;
-    mem[4] <= 32'hEA000000;
-    mem[16] <= 32'hEAFFFFF6;
+    mem = 0;
   end
 
   always @(posedge clk) begin

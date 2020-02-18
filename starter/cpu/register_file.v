@@ -9,7 +9,7 @@ module register_file #(parameter
   input wire [ADDR_SIZE-1:0] select1,
   input wire [ADDR_SIZE-1:0] select2,
   input wire [ADDR_SIZE-1:0] wselect,
-  input wire [23:0] offset,
+  input wire signed [23:0] offset,
   input wire read_not_write,
   input wire [REG_SIZE-1:0] data_in,
   output wire [REG_SIZE-1:0] d1_out,
@@ -37,10 +37,10 @@ module register_file #(parameter
         2'b11: begin // write back
                  if (~read_not_write)
                    registers[wselect] <= data_in;
+                 registers[15] <= registers[15] + 4 + offset; //program counter
                end
         default: ;
       endcase
-      registers[15] <= registers[15] + 4 + offset; //program counter
     end
   end
 endmodule
