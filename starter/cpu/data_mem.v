@@ -1,5 +1,5 @@
 module data_mem #(parameter
-  MEM_ADDR_SIZE = 16,,
+  MEM_ADDR_SIZE = 10,
   REG_SIZE = 32
   )
   (
@@ -15,9 +15,7 @@ module data_mem #(parameter
   reg [7:0] mem [(2 ** MEM_ADDR_SIZE)-1:0];
 
   always @(posedge clk) begin
-    if (~nreset) begin
-      dout <= 0;
-    end else if (en) begin
+    if (en) begin
       case (phase)
         2'b10: begin
                  if (~read_not_write) begin

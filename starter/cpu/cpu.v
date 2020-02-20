@@ -23,22 +23,24 @@ module cpu(
   reg [REG_ADDR-1:0] ws;
   reg [REG_SIZE-1:0] din;
   reg [REG_SIZE-1:0] pc;
+  reg [REG_SIZE-1:0] mem_dat;
   reg [INSTR_LEN-1:0] inst;
-  reg signed [23:0] offset;
+  reg signed [REG_SIZE-1:0] offset;
   reg [3:0] opcode;
   reg [3:0] cond_code;
-  reg [3:0] b_imm;
   reg [7:0] shift;
   reg [3:0] rot;
   reg [7:0] imm;
   reg [3:0] shift_reg;
   reg [3:0] shift_byte;
+  reg b_imm;
   reg we;
   reg set_cond;
   reg carry;
   reg overflow;
   reg cond_met;
-  reg alu_res;
+  reg mem_en;
+  reg ld_st;
 
   // phase 00 = instr fetch
   // phase 01 = reg read
@@ -62,26 +64,34 @@ module cpu(
     debug_port6 = 8'h06;
     debug_port7 = 8'h07;
 
-    cond = inst[31:28];
+    cond_code = inst[31:28];
     b_imm = inst[27:24]; //b_imm[1] means op 2 is register
-    opcode = inst[24:21];
+    mem_en = (inst[27:26] == 2'b01);
     set_cond = inst[20];
+    ld_st = inst[20];
     r0 = inst[19:16];
     ws = inst[15:12];
     //op 2 if b_imm == 0
     shift = inst[11:4];
     shift_reg = inst[11:8];
-    r1 = inst[3:0];
+    if (mem_en) begin
+      opcode = 4'b1101;
+      r1 = inst[15:12];
+    end else begin
+      opcode = inst[24:21];
+      r1 = inst[3:0];
+    end
     //op 2 is b_imm == 1
     rot = inst[11:8];
     imm = inst[7:0];
   end
 
   instruction_memory im (clk, nreset, phase, pc, inst);
-  register_file rf (clk, nreset, phase, r0, r1, ws, shift_reg, offset, we, din, d0, d1, shift_byte, pc);
-  compute_offset of (clk, inst, offset);
-  flags f (clk, cond_code, set_cond, carry, overflow, alu_res, cond_met);
-  ALU alu (opcode, do, d1, imm, shift, rot, shift_byte, b_imm, din, overflow, carry, we);
+  register_file rf (clk, nreset, phase, r0, r1, ws, shift_reg, offset, we, mem_en, din, mem_dat, d0, d1, shift_byte, pc);
+  compute_offset of (inst, offset);
+  flags f (clk, cond_code, set_cond, carry, overflow, din, cond_met);
+  ALU alu (opcode, d0, d1, imm, shift, rot, shift_byte, b_imm, din, overflow, carry, we);
+  data_mem dm (clk, phase, din, d0, mem_en, ld_st, mem_dat);
 
   always @(posedge clk) begin
     if (~nreset) begin

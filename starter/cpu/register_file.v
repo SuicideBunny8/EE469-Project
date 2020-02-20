@@ -10,9 +10,11 @@ module register_file #(parameter
   input wire [ADDR_SIZE-1:0] select2,
   input wire [ADDR_SIZE-1:0] wselect,
   input wire [ADDR_SIZE-1:0] shft_reg,
-  input wire signed [23:0] offset,
+  input wire signed [REG_SIZE-1:0] offset,
   input wire we,
+  input wire from_mem,
   input wire [REG_SIZE-1:0] data_in,
+  input wire [REG_SIZE-1:0] mem_in,
   output wire [REG_SIZE-1:0] d1_out,
   output wire [REG_SIZE-1:0] d2_out,
   output wire [3:0] shft_byte,
@@ -38,12 +40,19 @@ module register_file #(parameter
                end
         2'b11: begin // write back
                  if (we)
-                   registers[wselect] <= data_in;
-                 registers[15] <= registers[15] + 4 + offset; //program counter
+                   if (from_mem)
+                     registers[wselect] <= mem_in;
+                   else
+                     registers[wselect] <= data_in;
+                 if (offset[31]) begin // offset negative
+                   registers[15] <= registers[15] + 4 - ~offset + 1; //program counter
+                 end else begin
+                   registers[15] <= registers[15] + 4 + offset;
+                 end
                end
         default: ;
       endcase
-      shift_byte <= registers[shft_reg][3:0];
+      shft_byte <= registers[shft_reg][3:0];
     end
   end
 endmodule
