@@ -16,25 +16,27 @@ module cpu(
   parameter REG_SIZE = 32;
   parameter REG_ADDR = 4;
 
-  wire [REG_SIZE-1:0] d0;
-  wire [REG_SIZE-1:0] d1;
-  wire [REG_ADDR-1:0] r0;
-  wire [REG_ADDR-1:0] r1;
-  wire [REG_ADDR-1:0] ws;
-  wire [REG_SIZE-1:0] din;
-  wire [REG_SIZE-1:0] pc;
-  wire signed [23:0] offset;
-  wire [3:0] opcode;
-  wire [3:0] cond_code;
-  wire [3:0] b_imm;
-  wire [7:0] shift;
-  wire [3:0] rot;
-  wire [7:0] imm;
-  wire we;
-  wire inst;
-  wire set_cond;
-  wire carry;
-  wire cond_met;
+  reg [REG_SIZE-1:0] d0;
+  reg [REG_SIZE-1:0] d1;
+  reg [REG_ADDR-1:0] r0;
+  reg [REG_ADDR-1:0] r1;
+  reg [REG_ADDR-1:0] ws;
+  reg [REG_SIZE-1:0] din;
+  reg [REG_SIZE-1:0] pc;
+  reg [INSTR_LEN-1:0] inst;
+  reg signed [23:0] offset;
+  reg [3:0] opcode;
+  reg [3:0] cond_code;
+  reg [3:0] b_imm;
+  reg [7:0] shift;
+  reg [3:0] rot;
+  reg [7:0] imm;
+  reg we;
+  reg set_cond;
+  reg carry;
+  reg overflow;
+  reg cond_met;
+  reg alu_res;
 
   // phase 00 = instr fetch
   // phase 01 = reg read
@@ -75,7 +77,7 @@ module cpu(
   instruction_memory im (clk, nreset, phase, pc, inst);
   register_file rf (clk, nreset, phase, r0, r1, ws, offset, we, din, d0, d1, pc);
   compute_offset of (clk, inst, offset);
-  flags f (clk, cond_code, set_cond, carry, d0, d1, cond_met);
+  flags f (clk, cond_code, set_cond, carry, overflow, alu_res, cond_met);
 
   always @(posedge clk) begin
     if (~nreset) begin

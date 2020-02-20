@@ -7,66 +7,53 @@ module flags #(parameter
   input wire [COND_LEN-1:0] cond_code,
   input wire comp,
   input wire carry,
-  input wire [REG_SIZE-1:0] d0,
-  input wire [REG_SIZE-1:0] d1,
+  input wire overflow,
+  input wire [REG_SIZE-1:0] data,
   output wire cond_met
   );
 
-  reg [(2 ** COND_LEN)-1:0] flags;
-  reg EQ; // 0000
-  reg NE; // 0001
-  reg CS; // 0010
-  reg CC; // 0011
-  reg MI; // 0100
-  reg PL; // 0101
-  reg VS; // 0110
-  reg VC; // 0111
-  reg HI; // 1000
-  reg LS; // 1001
-  reg GE; // 1010
-  reg LT; // 1011
-  reg GT; // 1100
-  reg LE; // 1101
+  reg N;
+  reg Ze;
+  reg V;
+  reg C;
+
+  reg ff;
 
   initial begin
-    flags <= 16'hFFFF;
+    N = 1'b0;
+    Ze = 1'b0;
+    V = 1'b0;
+    C = 1'b0;
   end
 
   always @(*) begin
-    if (comp) begin
-      EQ = d0 == d1; // equal
-      NE = d0 != d1; // not equal
-      //CS;
-      //CC;
-      //MI;
-      //PL;
-      VS = carry & 1'b1; // overflow
-      VC = carry ~& 1'b1; // no overflow
-      //HI;
-      //LS;
-      GE = d0 >= d1; // Greater than or equal to
-      LT = d0 < d1; // less than
-      GT = d0 > d1; // greater than
-      LE = d0 <= d1; // less than or equal to
-    end
+    case (cond_code)
+      4'b0000: ff = Ze;
+      4'b0001: ff = ~Ze;
+      4'b0010: ff = C;
+      4'b0011: ff = ~C;
+      4'b0100: ff = N;
+      4'b0101: ff = ~N;
+      4'b0110: ff = V;
+      4'b0111: ff = ~V;
+      4'b1000: ff = C & ~Ze;
+      4'b1001: ff = ~C | Ze;
+      4'b1010: ff = N ^ V;
+      4'b1011: ff = N ^~ V;
+      4'b1100: ff = ~Ze & (N ^ V);
+      4'b1101: ff = Ze | (N ^~ V);
+      default: ff = 1;
+    endcase
   end
 
   always @(posedge clk) begin
-    flags[0000] <= EQ;
-    flags[0001] <= NE;
-    flags[0010] <= 1'b1;
-    flags[0011] <= 1'b1;
-    flags[0100] <= 1'b1;
-    flags[0101] <= 1'b1;
-    flags[0110] <= VS;
-    flags[0111] <= VC;
-    flags[1000] <= 1'b1;
-    flags[1001] <= 1'b1;
-    flags[1010] <= GE;
-    flags[1011] <= LT;
-    flags[1100] <= GT;
-    flags[1101] <= LE;
-    cond_met <= flags[cond_code];
+    if (comp) begin
+      N <= data[31];
+      Ze <= ~|data;
+      V <= overflow;
+      C <= carry;
+    end
+    cond_met <= ff;
   end
 
 endmodule
