@@ -31,6 +31,8 @@ module cpu(
   reg [7:0] shift;
   reg [3:0] rot;
   reg [7:0] imm;
+  reg [3:0] shift_reg;
+  reg [3:0] shift_byte;
   reg we;
   reg set_cond;
   reg carry;
@@ -68,6 +70,7 @@ module cpu(
     ws = inst[15:12];
     //op 2 if b_imm == 0
     shift = inst[11:4];
+    shift_reg = inst[11:8];
     r1 = inst[3:0];
     //op 2 is b_imm == 1
     rot = inst[11:8];
@@ -75,9 +78,10 @@ module cpu(
   end
 
   instruction_memory im (clk, nreset, phase, pc, inst);
-  register_file rf (clk, nreset, phase, r0, r1, ws, offset, we, din, d0, d1, pc);
+  register_file rf (clk, nreset, phase, r0, r1, ws, shift_reg, offset, we, din, d0, d1, shift_byte, pc);
   compute_offset of (clk, inst, offset);
   flags f (clk, cond_code, set_cond, carry, overflow, alu_res, cond_met);
+  ALU alu (opcode, do, d1, imm, shift, rot, shift_byte, b_imm, din, overflow, carry, we);
 
   always @(posedge clk) begin
     if (~nreset) begin
