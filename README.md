@@ -28,10 +28,11 @@
 
 3) you may run into merge conflicts. That will look like this in your code
 
+```
 <<<<<<< HEAD
 changes you have made
 =======
 code on master branch
 >>>>>>> branch id (will look like a random collection of characters)
-
+```
 This can happen when two people make changes to the same lines of code. You will need to remove the arrow and equal sign lines and select which edit you want to keep. That is select the code either above or below the equal signs.
